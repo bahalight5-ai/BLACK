@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ar" dir="rtl" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Black - متجر شحن الألعاب</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&amp;display=swap" rel="stylesheet">
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getDatabase, ref, set, get, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyDOUiE3jQnZysRwPh3geKiSz9PG9yya62w",
+      authDomain: "dandan-580bc.firebaseapp.com",
+      databaseURL: "https://dandan-580bc-default-rtdb.firebaseio.com",
+      projectId: "dandan-580bc",
+      storageBucket: "dandan-580bc.firebasestorage.app",
+      messagingSenderId: "387449211176",
+      appId: "1:387449211176:web:132e70689d64da7898a81d",
+      measurementId: "G-MVQ2P9159B"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    
+    window.firebaseDB = db;
+    window.firebaseRef = ref;
+    window.firebaseSet = set;
+    window.firebaseGet = get;
+    window.firebasePush = push;
+    window.firebaseOnValue = onValue;
+    window.firebaseUpdate = update;
+    window.firebaseRemove = remove;
+  </script>
+ <link rel="stylesheet" href="style.css">
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-[#0a0a1a] text-white overflow-x-hidden">
+  <div id="app" class="h-full flex flex-col"><!-- Header -->
+   <header class="glass-card sticky top-0 z-50 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4"><!-- Logo -->
+     <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center pulse-glow">
+       <svg class="w-7 h-7 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+       </svg>
+      </div>
+      <div>
+       <h1 class="text-2xl font-black gradient-text">BLACK</h1>
+       <p class="text-xs text-gray-400">متجر شحن الألعاب</p>
+      </div>
+     </div><!-- Search Bar -->
+     <div class="flex-1 max-w-xl hidden md:block">
+      <div class="relative"><input type="text" id="searchInput" placeholder="ابحث عن لعبة أو منتج..." class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-5 pr-12 text-white placeholder-gray-500 transition-all">
+       <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+       </svg>
+      </div>
+     </div><!-- User Section -->
+     <div id="userSection" class="flex items-center gap-3"><!-- Guest View -->
+      <div id="guestView" class="flex items-center gap-2"><button onclick="showAuthModal('login')" class="px-4 py-2 bg-[#1a1a2e] border border-gray-700 rounded-lg hover:border-indigo-500 transition-all text-sm font-medium"> تسجيل الدخول </button> <button onclick="showAuthModal('register')" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg hover:opacity-90 transition-all text-sm font-medium"> إنشاء حساب </button>
+      </div><!-- Logged In View -->
+      <div id="loggedInView" class="hidden items-center gap-4">
+       <div class="text-left">
+        <p id="headerUsername" class="text-sm font-medium">المستخدم</p>
+        <p class="text-xs text-gray-400">الرصيد: <span id="headerBalance" class="text-green-400 font-bold">0</span> ج.س</p>
+       </div>
+       <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center"><span id="headerAvatar" class="text-lg font-bold">م</span>
+       </div>
+      </div>
+     </div>
+    </div><!-- Mobile Search -->
+    <div class="md:hidden mt-3"><input type="text" placeholder="ابحث عن لعبة..." class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-2 px-4 text-white placeholder-gray-500">
+    </div>
+   </header><!-- Main Content -->
+   <main class="flex-1 overflow-y-auto pb-20"><!-- Hero Slider -->
+    <section class="relative overflow-hidden">
+     <div class="slider-container">
+      <div id="heroSlider" class="slider-track"><!-- Slides will be populated dynamically -->
+      </div>
+     </div><!-- Slider Controls --> <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center hover:bg-indigo-500 transition-all">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg></button> <button onclick="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center hover:bg-indigo-500 transition-all">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg></button> <!-- Slider Dots -->
+     <div id="sliderDots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2"><!-- Dots will be populated dynamically -->
+     </div>
+    </section><!-- Games Section -->
+    <section class="px-4 py-8">
+     <div class="max-w-7xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+       <h2 class="text-2xl font-bold"><span class="gradient-text">🎮 الألعاب المتاحة</span></h2>
+       <div class="flex gap-2"><button onclick="filterGames('all')" class="filter-btn active px-4 py-2 bg-indigo-500 rounded-lg text-sm font-medium transition-all" data-filter="all">الكل</button> <button onclick="filterGames('popular')" class="filter-btn px-4 py-2 bg-[#1a1a2e] rounded-lg text-sm font-medium hover:bg-indigo-500 transition-all" data-filter="popular">الأكثر شعبية</button> <button onclick="filterGames('new')" class="filter-btn px-4 py-2 bg-[#1a1a2e] rounded-lg text-sm font-medium hover:bg-indigo-500 transition-all" data-filter="new">جديد</button>
+       </div>
+      </div>
+      <div id="gamesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"><!-- Games will be populated dynamically -->
+      </div>
+     </div>
+    </section>
+   </main><!-- Floating Menu Button --> <button id="menuToggle" onclick="toggleSidebar()" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-lg flex items-center justify-center z-40 hover:scale-110 transition-transform pulse-glow">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg></button> <!-- Sidebar -->
+   <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-40 hidden" onclick="toggleSidebar()"></div>
+   <aside id="sidebar" class="fixed top-0 right-0 h-full w-80 glass-card z-50 transform translate-x-full transition-transform duration-300 overflow-y-auto">
+    <div class="p-4"><!-- Sidebar Header -->
+     <div class="flex items-center justify-between mb-6"><button onclick="toggleSidebar()" class="w-10 h-10 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-red-500 transition-all">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+       </svg></button> <button onclick="showSettings()" class="w-10 h-10 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-indigo-500 transition-all">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+       </svg></button>
+     </div><!-- Profile Section -->
+     <div class="text-center mb-6">
+      <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center mb-3 float-animation"><span id="sidebarAvatar" class="text-3xl font-bold">؟</span>
+      </div>
+      <h3 id="sidebarUsername" class="text-lg font-bold">مرحباً بك</h3>
+      <div class="flex items-center justify-center gap-2 mt-1"><span id="sidebarUserId" class="text-xs text-gray-400">ID: ------</span> <button onclick="copyUserId()" class="text-indigo-400 hover:text-indigo-300">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg></button>
+      </div>
+     </div><!-- Wallet Card -->
+     <div class="glass-card rounded-xl p-4 mb-4 neon-border">
+      <div class="flex items-center justify-between mb-3"><span class="text-gray-400 text-sm">رصيد المحفظة</span>
+       <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewbox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+       </svg>
+      </div>
+      <p id="sidebarBalance" class="text-3xl font-black gradient-text mb-4">0 ج.س</p>
+      <div class="grid grid-cols-2 gap-2"><button onclick="showAddBalance()" class="py-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg text-sm font-medium hover:opacity-90 transition-all"> إضافة رصيد </button> <button onclick="showMyOrders()" class="py-2 bg-[#1a1a2e] border border-gray-700 rounded-lg text-sm font-medium hover:border-indigo-500 transition-all"> طلباتي </button>
+      </div>
+     </div><!-- Recent Orders -->
+     <div class="glass-card rounded-xl p-4 mb-4">
+      <h4 class="text-sm font-bold mb-3 flex items-center gap-2">
+       <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+       </svg> الطلبات الأخيرة</h4>
+      <div id="recentOrders" class="space-y-2">
+       <p class="text-xs text-gray-500 text-center py-4">لا توجد طلبات</p>
+      </div>
+     </div><!-- Notifications -->
+     <div class="glass-card rounded-xl p-4 mb-4">
+      <div class="flex items-center justify-between mb-3">
+       <h4 class="text-sm font-bold flex items-center gap-2">
+        <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg> الإشعارات</h4><button onclick="showAllNotifications()" class="text-xs text-indigo-400 hover:text-indigo-300">عرض الكل</button>
+      </div>
+      <div id="recentNotifications" class="space-y-2">
+       <p class="text-xs text-gray-500 text-center py-4">لا توجد إشعارات</p>
+      </div>
+     </div><!-- Action Buttons -->
+     <div class="space-y-2">
+       <button onclick="goToP2PSite()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+  </svg>
+  P2P - وسيط الحسابات
+</button>
+       
+       <button onclick="showSupport()" class="w-full py-3 bg-[#1a1a2e] border border-gray-700 rounded-xl font-medium flex items-center justify-center gap-2 hover:border-indigo-500 transition-all">
+       <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+       </svg> الدعم الفني </button>
+       <button id="logoutBtn" onclick="logout()" class="hidden w-full py-3 bg-red-500/20 border border-red-500/50 rounded-xl font-medium text-red-400 flex items-center justify-center gap-2 hover:bg-red-500/30 transition-all">
+       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+       </svg> تسجيل الخروج </button>
+     </div>
+    </div>
+   </aside><!-- Auth Modal -->
+   <div id="authModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4">
+    <div class="glass-card rounded-2xl w-full max-w-md p-6 fade-in">
+     <div class="flex items-center justify-between mb-6">
+      <h3 id="authTitle" class="text-xl font-bold">تسجيل الدخول</h3><button onclick="closeAuthModal()" class="w-8 h-8 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-red-500 transition-all">
+       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+       </svg></button>
+     </div><!-- Login Form -->
+     <form id="loginForm" class="space-y-4">
+      <div><label class="block text-sm text-gray-400 mb-1">رقم الهاتف أو ID</label> <input type="text" id="loginPhone" required class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="أدخل رقم الهاتف">
+      </div>
+      <div><label class="block text-sm text-gray-400 mb-1">كلمة المرور</label> <input type="password" id="loginPassword" required class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="أدخل كلمة المرور">
+      </div><button type="submit" class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl font-bold hover:opacity-90 transition-all"> تسجيل الدخول </button>
+      <p class="text-center text-sm text-gray-400">ليس لديك حساب؟ <button type="button" onclick="showAuthModal('register')" class="text-indigo-400 hover:text-indigo-300">إنشاء حساب</button></p>
+     </form><!-- Register Form -->
+     <form id="registerForm" class="space-y-4 hidden">
+      <div><label class="block text-sm text-gray-400 mb-1">الاسم</label> <input type="text" id="regName" required class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="أدخل اسمك">
+      </div>
+      <div><label class="block text-sm text-gray-400 mb-1">رقم الهاتف</label> <input type="tel" id="regPhone" required class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="أدخل رقم الهاتف">
+      </div>
+      <div><label class="block text-sm text-gray-400 mb-1">كلمة المرور</label> <input type="password" id="regPassword" required class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="أدخل كلمة المرور">
+      </div>
+      <div><label class="block text-sm text-gray-400 mb-1">تأكيد كلمة المرور</label> <input type="password" id="regConfirmPassword" required class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="أعد إدخال كلمة المرور">
+      </div><button type="submit" class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl font-bold hover:opacity-90 transition-all"> إنشاء حساب </button>
+      <p class="text-center text-sm text-gray-400">لديك حساب بالفعل؟ <button type="button" onclick="showAuthModal('login')" class="text-indigo-400 hover:text-indigo-300">تسجيل الدخول</button></p>
+     </form>
+    </div>
+   </div><!-- Game Modal -->
+   <div id="gameModal" class="fixed inset-0 bg-black/90 z-50 hidden overflow-y-auto">
+    <div class="min-h-full p-4 flex items-start justify-center pt-10">
+     <div class="glass-card rounded-2xl w-full max-w-2xl fade-in">
+      <div class="relative">
+       <div id="gameModalBanner" class="h-48 rounded-t-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center"><span id="gameModalIcon" class="text-8xl">🎮</span>
+       </div><button onclick="closeGameModal()" class="absolute top-4 left-4 w-10 h-10 bg-black/50 rounded-full flex items-center justify-center hover:bg-red-500 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg></button>
+      </div>
+      <div class="p-6">
+       <h3 id="gameModalTitle" class="text-2xl font-black mb-2">اسم اللعبة</h3>
+       <p id="gameModalDesc" class="text-gray-400 text-sm mb-6">وصف اللعبة</p>
+       <h4 class="font-bold mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg> العروض المتاحة</h4>
+       <div id="gameOffers" class="space-y-3"><!-- Offers will be populated dynamically -->
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Add Balance Modal -->
+   <div id="addBalanceModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4">
+    <div class="glass-card rounded-2xl w-full max-w-md p-6 fade-in">
+     <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold">إضافة رصيد</h3><button onclick="closeAddBalanceModal()" class="w-8 h-8 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-red-500 transition-all">
+       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+       </svg></button>
+     </div>
+     <div id="balanceStep1">
+      <div class="mb-4"><label class="block text-sm text-gray-400 mb-2">المبلغ بالجنيه السوداني</label> <input type="number" id="balanceAmount" min="100" class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white text-xl font-bold text-center" placeholder="0">
+      </div>
+      <div class="mb-6"><label class="block text-sm text-gray-400 mb-2">اختر طريقة الدفع</label>
+       <div class="grid grid-cols-2 gap-3"><button onclick="selectPayment('bankak')" class="payment-btn p-4 bg-[#1a1a2e] border-2 border-gray-700 rounded-xl hover:border-indigo-500 transition-all" data-method="bankak">
+         <div class="text-3xl mb-2">
+          🏦
+         </div><span class="font-medium">بنكك</span> </button> <button onclick="selectPayment('mycash')" class="payment-btn p-4 bg-[#1a1a2e] border-2 border-gray-700 rounded-xl hover:border-indigo-500 transition-all" data-method="mycash">
+         <div class="text-3xl mb-2">
+          💳
+         </div><span class="font-medium">ماي كاشي</span> </button>
+       </div>
+      </div><button onclick="proceedPayment()" id="proceedPaymentBtn" disabled class="w-full py-3 bg-gray-600 rounded-xl font-bold transition-all cursor-not-allowed"> متابعة </button>
+     </div>
+     <div id="balanceStep2" class="hidden">
+      <div class="text-center mb-6">
+       <div class="w-16 h-16 mx-auto bg-indigo-500/20 rounded-full flex items-center justify-center mb-4">
+        <svg class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+       </div>
+       <h4 class="font-bold mb-2">تعليمات الدفع</h4>
+       <p id="paymentInstructions" class="text-gray-400 text-sm"></p>
+      </div>
+      <div class="glass-card rounded-xl p-4 mb-4">
+       <div class="flex items-center justify-between mb-2"><span class="text-gray-400 text-sm">رقم الحساب</span> <button onclick="copyAccountNumber()" class="text-indigo-400 hover:text-indigo-300 text-sm">نسخ</button>
+       </div>
+       <p id="accountNumber" class="text-xl font-bold font-mono">---</p>
+       <p id="accountName" class="text-sm text-gray-400 mt-1">---</p>
+      </div>
+      <div class="glass-card rounded-xl p-4 mb-6">
+       <p class="text-sm text-gray-400">المبلغ المطلوب تحويله</p>
+       <p id="transferAmount" class="text-2xl font-black gradient-text">0 ج.س</p>
+      </div><button onclick="sendWhatsAppNotification()" class="w-full py-3 bg-green-500 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-600 transition-all">
+       <svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+       </svg> إرسال إشعار عبر واتساب </button> <button onclick="backToStep1()" class="w-full py-2 mt-3 text-gray-400 hover:text-white transition-all"> العودة </button>
+     </div>
+    </div>
+   </div><!-- Orders Modal -->
+   <div id="ordersModal" class="fixed inset-0 bg-black/90 z-50 hidden overflow-y-auto">
+    <div class="min-h-full p-4">
+     <div class="glass-card rounded-2xl w-full max-w-2xl mx-auto fade-in">
+      <div class="sticky top-0 glass-card rounded-t-2xl p-4 flex items-center justify-between border-b border-gray-700">
+       <h3 class="text-xl font-bold">طلباتي</h3><button onclick="closeOrdersModal()" class="w-10 h-10 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-red-500 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg></button>
+      </div>
+      <div class="p-4">
+       <div class="flex gap-2 mb-4 overflow-x-auto pb-2"><button onclick="filterOrders('all')" class="order-filter-btn active px-4 py-2 bg-indigo-500 rounded-lg text-sm font-medium whitespace-nowrap" data-filter="all">الكل</button> <button onclick="filterOrders('pending')" class="order-filter-btn px-4 py-2 bg-[#1a1a2e] rounded-lg text-sm font-medium whitespace-nowrap" data-filter="pending">قيد المراجعة</button> <button onclick="filterOrders('completed')" class="order-filter-btn px-4 py-2 bg-[#1a1a2e] rounded-lg text-sm font-medium whitespace-nowrap" data-filter="completed">مكتملة</button> <button onclick="filterOrders('cancelled')" class="order-filter-btn px-4 py-2 bg-[#1a1a2e] rounded-lg text-sm font-medium whitespace-nowrap" data-filter="cancelled">ملغية</button>
+       </div>
+       <div id="ordersList" class="space-y-3">
+        <p class="text-center text-gray-500 py-8">لا توجد طلبات</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Settings Modal -->
+   <div id="settingsModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4">
+    <div class="glass-card rounded-2xl w-full max-w-md p-6 fade-in">
+     <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold">الإعدادات</h3><button onclick="closeSettingsModal()" class="w-8 h-8 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-red-500 transition-all">
+       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+       </svg></button>
+     </div>
+     <form id="settingsForm" class="space-y-4">
+      <div><label class="block text-sm text-gray-400 mb-1">تغيير الاسم <span id="nameChangeInfo" class="text-xs text-yellow-400"></span></label> <input type="text" id="settingsName" class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="الاسم الجديد">
+      </div>
+      <div><label class="block text-sm text-gray-400 mb-1">رقم الهاتف</label> <input type="tel" id="settingsPhone" class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="رقم الهاتف">
+      </div>
+      <div><label class="block text-sm text-gray-400 mb-1">كلمة المرور الجديدة</label> <input type="password" id="settingsPassword" class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="اتركه فارغاً إذا لم ترد التغيير">
+      </div><button type="submit" class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl font-bold hover:opacity-90 transition-all"> حفظ التغييرات </button>
+     </form>
+    </div>
+   </div><!-- Support Modal -->
+   <div id="supportModal" class="fixed inset-0 bg-black/90 z-50 hidden overflow-y-auto">
+    <div class="min-h-full p-4 flex items-start justify-center pt-10">
+     <div class="glass-card rounded-2xl w-full max-w-2xl fade-in">
+      <div class="p-4 flex items-center justify-between border-b border-gray-700">
+       <h3 class="text-xl font-bold">الدعم الفني</h3><button onclick="closeSupportModal()" class="w-10 h-10 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-red-500 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg></button>
+      </div>
+      <div id="supportContent" class="p-6">
+       <h4 class="font-bold mb-4">المشاكل الشائعة</h4>
+       <div class="space-y-3">
+        <div class="glass-card rounded-xl p-4 cursor-pointer hover:border-indigo-500 transition-all" onclick="toggleFAQ(this)">
+         <div class="flex items-center justify-between"><span class="font-medium">لم يصل الشحن إلى حسابي</span>
+          <svg class="w-5 h-5 text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+         </div>
+         <div class="faq-answer hidden mt-3 text-sm text-gray-400">
+          <p>يرجى التأكد من:</p>
+          <ul class="list-disc list-inside mt-2 space-y-1">
+           <li>صحة معرف اللاعب المدخل</li>
+           <li>اختيار السيرفر الصحيح</li>
+           <li>انتظار 5-10 دقائق بعد إتمام الطلب</li>
+          </ul>
+         </div>
+        </div>
+        <div class="glass-card rounded-xl p-4 cursor-pointer hover:border-indigo-500 transition-all" onclick="toggleFAQ(this)">
+         <div class="flex items-center justify-between"><span class="font-medium">كيف أشحن المحفظة؟</span>
+          <svg class="w-5 h-5 text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+         </div>
+         <div class="faq-answer hidden mt-3 text-sm text-gray-400">
+          <p>لشحن المحفظة:</p>
+          <ul class="list-disc list-inside mt-2 space-y-1">
+           <li>اضغط على "إضافة رصيد" في القائمة الجانبية</li>
+           <li>أدخل المبلغ المطلوب</li>
+           <li>اختر طريقة الدفع (بنكك أو ماي كاشي)</li>
+           <li>قم بالتحويل ثم أرسل إشعار عبر واتساب</li>
+          </ul>
+         </div>
+        </div>
+        <div class="glass-card rounded-xl p-4 cursor-pointer hover:border-indigo-500 transition-all" onclick="toggleFAQ(this)">
+         <div class="flex items-center justify-between"><span class="font-medium">ما هي مدة معالجة الطلب؟</span>
+          <svg class="w-5 h-5 text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+         </div>
+         <div class="faq-answer hidden mt-3 text-sm text-gray-400">
+          <p>مدة معالجة الطلبات:</p>
+          <ul class="list-disc list-inside mt-2 space-y-1">
+           <li>شحن الألعاب: 2-5 دقائق</li>
+           <li>شحن المحفظة: 2-10 دقائق</li>
+           <li>طلبات P2P: حسب الاتفاق بين الطرفين</li>
+          </ul>
+         </div>
+        </div>
+       </div>
+       <div class="mt-6 pt-6 border-t border-gray-700">
+        <p class="text-gray-400 text-sm mb-4">لم تجد حلاً لمشكلتك؟</p><button onclick="startLiveChat()" class="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all">
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+         </svg> دعم مباشر </button>
+       </div>
+      </div><!-- Live Chat -->
+      <div id="liveChatContainer" class="hidden">
+       <div class="p-4 border-b border-gray-700 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+         <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+         </div>
+         <div>
+          <p class="font-medium">الدعم الفني</p>
+          <p id="chatStatus" class="text-xs text-yellow-400">في انتظار موظف...</p>
+         </div>
+        </div>
+        <div class="flex items-center gap-2"><span id="chatTimer" class="text-sm text-gray-400">00:00</span> <button onclick="minimizeChat()" class="w-8 h-8 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-indigo-500 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+          </svg></button> <button onclick="toggleFullscreenChat()" class="w-8 h-8 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-indigo-500 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+          </svg></button>
+        </div>
+       </div>
+       <div id="chatMessages" class="h-80 overflow-y-auto p-4 space-y-3">
+        <div class="text-center">
+         <p class="text-sm text-gray-500">جاري الاتصال بفريق الدعم...</p>
+         <p class="text-xs text-gray-600 mt-1">مدة الانتظار المتوقعة: 5 دقائق</p>
+        </div>
+       </div>
+       <div class="p-4 border-t border-gray-700">
+        <div class="flex gap-2"><input type="text" id="chatInput" placeholder="اكتب رسالتك..." class="flex-1 bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white"> <button onclick="sendChatMessage()" class="px-4 bg-indigo-500 rounded-xl hover:bg-indigo-600 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg></button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- P2P Modal -->
+   <div id="p2pModal" class="fixed inset-0 bg-black/90 z-50 hidden overflow-y-auto">
+    <div class="min-h-full p-4">
+     <div class="glass-card rounded-2xl w-full max-w-4xl mx-auto fade-in">
+      <div class="sticky top-0 glass-card rounded-t-2xl p-4 flex items-center justify-between border-b border-gray-700">
+       <div>
+        <h3 class="text-xl font-bold">P2P - وسيط الحسابات</h3>
+        <p class="text-xs text-gray-400">بيع وشراء حسابات الألعاب بأمان</p>
+       </div><button onclick="closeP2PModal()" class="w-10 h-10 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-red-500 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg></button>
+      </div>
+      <div class="p-6"><!-- P2P Tabs -->
+       <div class="flex gap-2 mb-6"><button onclick="switchP2PTab('buy')" class="p2p-tab active flex-1 py-3 bg-indigo-500 rounded-xl font-medium transition-all" data-tab="buy"> 🛒 شراء حساب </button> <button onclick="switchP2PTab('sell')" class="p2p-tab flex-1 py-3 bg-[#1a1a2e] rounded-xl font-medium hover:bg-indigo-500 transition-all" data-tab="sell"> 💰 بيع حساب </button> <button onclick="switchP2PTab('my')" class="p2p-tab flex-1 py-3 bg-[#1a1a2e] rounded-xl font-medium hover:bg-indigo-500 transition-all" data-tab="my"> 📋 معاملاتي </button>
+       </div><!-- Buy Tab -->
+       <div id="p2pBuyTab" class="p2p-content">
+        <div class="glass-card rounded-xl p-4 mb-4">
+         <div class="flex items-center gap-2 text-sm text-yellow-400 mb-2">
+          <svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+          </svg> كيف يعمل نظام الوسيط؟
+         </div>
+         <ol class="text-xs text-gray-400 space-y-1 list-decimal list-inside">
+          <li>اختر الحساب المناسب واضغط "شراء"</li>
+          <li>يتم خصم المبلغ من محفظتك كضمان</li>
+          <li>يقوم البائع بتسليمك بيانات الحساب</li>
+          <li>تأكد من الحساب ثم اضغط "تأكيد الاستلام"</li>
+          <li>يتم تحويل المبلغ للبائع بعد التأكيد</li>
+         </ol>
+        </div>
+        <div id="p2pListings" class="grid gap-4 md:grid-cols-2"><!-- Listings will be populated dynamically -->
+         <p class="col-span-2 text-center text-gray-500 py-8">لا توجد حسابات متاحة حالياً</p>
+        </div>
+       </div><!-- Sell Tab -->
+       <div id="p2pSellTab" class="p2p-content hidden">
+        <form id="sellAccountForm" class="space-y-4">
+         <div><label class="block text-sm text-gray-400 mb-1">اللعبة</label> <select id="sellGame" required class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white"> <option value="">اختر اللعبة</option> <option value="pubg">PUBG Mobile</option> <option value="freefire">Free Fire</option> <option value="fortnite">Fortnite</option> <option value="cod">Call of Duty Mobile</option> <option value="genshin">Genshin Impact</option> </select>
+         </div>
+         <div><label class="block text-sm text-gray-400 mb-1">عنوان الإعلان</label> <input type="text" id="sellTitle" required class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="مثال: حساب PUBG لفل 70 مع سكنات نادرة">
+         </div>
+         <div><label class="block text-sm text-gray-400 mb-1">وصف الحساب</label> <textarea id="sellDescription" required rows="3" class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white resize-none" placeholder="اذكر تفاصيل الحساب: المستوى، السكنات، الإنجازات..."></textarea>
+         </div>
+         <div><label class="block text-sm text-gray-400 mb-1">السعر (ج.س)</label> <input type="number" id="sellPrice" required min="100" class="w-full bg-[#1a1a2e] border border-gray-700 rounded-xl py-3 px-4 text-white" placeholder="0">
+         </div><button type="submit" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl font-bold hover:opacity-90 transition-all"> نشر الإعلان </button>
+        </form>
+       </div><!-- My Transactions Tab -->
+       <div id="p2pMyTab" class="p2p-content hidden">
+        <div id="myP2PTransactions" class="space-y-3">
+         <p class="text-center text-gray-500 py-8">لا توجد معاملات</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div><!-- Notifications Modal -->
+   <div id="notificationsModal" class="fixed inset-0 bg-black/90 z-50 hidden overflow-y-auto">
+    <div class="min-h-full p-4">
+     <div class="glass-card rounded-2xl w-full max-w-lg mx-auto fade-in">
+      <div class="sticky top-0 glass-card rounded-t-2xl p-4 flex items-center justify-between border-b border-gray-700">
+       <h3 class="text-xl font-bold">الإشعارات</h3><button onclick="closeNotificationsModal()" class="w-10 h-10 bg-[#1a1a2e] rounded-lg flex items-center justify-center hover:bg-red-500 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg></button>
+      </div>
+      <div id="allNotifications" class="p-4 space-y-3">
+       <p class="text-center text-gray-500 py-8">لا توجد إشعارات</p>
+      </div>
+     </div>
+    </div>
+   </div><!-- Toast Container -->
+   <div id="toastContainer" class="fixed top-4 left-4 z-[100] space-y-2"></div><!-- Minimized Chat Bubble -->
+   <div id="chatBubble" class="fixed bottom-24 right-6 z-50 hidden"><button onclick="maximizeChat()" class="w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full shadow-lg flex items-center justify-center pulse-glow relative">
+     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+     </svg><span id="chatBubbleBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center">1</span> </button>
+   </div>
+  </div>
+ <script src="main.js"></script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c607b2b13e311bc',t:'MTc2OTc3MDk4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
